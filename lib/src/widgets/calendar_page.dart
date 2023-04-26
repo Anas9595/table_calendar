@@ -76,7 +76,7 @@ class CalendarPage extends StatelessWidget {
     return TableRow(
       decoration: dowDecoration,
       children: List.generate(
-        7,
+        numberOfVisibleCells,
         (index) => dowBuilder!(context, visibleDays[index]),
       ).toList(),
     );
@@ -89,7 +89,7 @@ class CalendarPage extends StatelessWidget {
         .map((index) => TableRow(
               decoration: rowDecoration,
               children: List.generate(
-                7,
+                numberOfVisibleCells,
                 (id) => dayBuilder(context, visibleDays[index + id]),
               ),
             ))
