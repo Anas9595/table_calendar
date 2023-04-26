@@ -20,6 +20,7 @@ class TableCalendarBase extends StatefulWidget {
   final bool sixWeekMonthsEnforced;
   final bool dowVisible;
   final bool weekNumbersVisible;
+  final int numberOfVisibleDays;
   final Decoration? dowDecoration;
   final Decoration? rowDecoration;
   final TableBorder? tableBorder;
@@ -49,6 +50,7 @@ class TableCalendarBase extends StatefulWidget {
     required this.rowHeight,
     this.sixWeekMonthsEnforced = false,
     this.dowVisible = true,
+    this.numberOfVisibleDays = 5,
     this.weekNumberBuilder,
     this.weekNumbersVisible = false,
     this.dowDecoration,
@@ -208,9 +210,10 @@ class _TableCalendarBaseState extends State<TableCalendarBase> {
             child: CalendarCore(
               constraints: constraints,
               pageController: _pageController,
+              numberOfVisible: widget.numberOfVisibleDays,
               scrollPhysics: _canScrollHorizontally
-                  ? PageScrollPhysics()
-                  : NeverScrollableScrollPhysics(),
+                  ? const PageScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               firstDay: widget.firstDay,
               lastDay: widget.lastDay,
               startingDayOfWeek: widget.startingDayOfWeek,
@@ -269,6 +272,8 @@ class _TableCalendarBaseState extends State<TableCalendarBase> {
     switch (format) {
       case CalendarFormat.month:
         return _getMonthCount(startDay, focusedDay);
+      case CalendarFormat.days:
+        return _getDaysCount(startDay, focusedDay);
       case CalendarFormat.twoWeeks:
         return _getTwoWeekCount(startDay, focusedDay);
       case CalendarFormat.week:
@@ -288,13 +293,22 @@ class _TableCalendarBaseState extends State<TableCalendarBase> {
   int _getWeekCount(DateTime first, DateTime last) {
     return last.difference(_firstDayOfWeek(first)).inDays ~/ 7;
   }
+  int _getDaysCount(DateTime first, DateTime last) {
+    return last.difference(_firstDayOfWeek(first)).inDays ~/ widget.numberOfVisibleDays;
+  }
+  
+  // int _getDayCount(DateTime first, DateTime last) {
+  //   return last.difference(_firstDayOfWeek(first)).inDays ~/ 7;
+  // }
 
   int _getTwoWeekCount(DateTime first, DateTime last) {
     return last.difference(_firstDayOfWeek(first)).inDays ~/ 14;
   }
 
   int _getRowCount(CalendarFormat format, DateTime focusedDay) {
-    if (format == CalendarFormat.twoWeeks) {
+    if (format == CalendarFormat.days) {
+      return 1;
+    } else if (format == CalendarFormat.twoWeeks) {
       return 2;
     } else if (format == CalendarFormat.week) {
       return 1;

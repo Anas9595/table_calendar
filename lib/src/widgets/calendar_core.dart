@@ -28,6 +28,7 @@ class CalendarCore extends StatelessWidget {
   final double? rowHeight;
   final BoxConstraints constraints;
   final int? previousIndex;
+  final int numberOfVisible;
   final StartingDayOfWeek startingDayOfWeek;
   final PageController? pageController;
   final ScrollPhysics? scrollPhysics;
@@ -43,6 +44,7 @@ class CalendarCore extends StatelessWidget {
     required this.constraints,
     this.dowHeight,
     this.rowHeight,
+    this.numberOfVisible = 5,
     this.startingDayOfWeek = StartingDayOfWeek.sunday,
     this.calendarFormat = CalendarFormat.month,
     this.pageController,
@@ -80,6 +82,7 @@ class CalendarCore extends StatelessWidget {
         return CalendarPage(
           visibleDays: visibleDays,
           dowVisible: dowVisible,
+          numberOfVisibleCells: numberOfVisible,
           dowDecoration: dowDecoration,
           rowDecoration: rowDecoration,
           tableBorder: tableBorder,
@@ -131,6 +134,8 @@ class CalendarCore extends StatelessWidget {
 
   int _getPageCount(CalendarFormat format, DateTime first, DateTime last) {
     switch (format) {
+      case CalendarFormat.days:
+        return _getDaysCount(first, last) + 1;
       case CalendarFormat.month:
         return _getMonthCount(first, last) + 1;
       case CalendarFormat.twoWeeks:
@@ -151,6 +156,9 @@ class CalendarCore extends StatelessWidget {
 
   int _getWeekCount(DateTime first, DateTime last) {
     return last.difference(_firstDayOfWeek(first)).inDays ~/ 7;
+  }
+  int _getDaysCount(DateTime first, DateTime last) {
+    return last.difference(_firstDayOfWeek(first)).inDays ~/ numberOfVisible;
   }
 
   int _getTwoWeekCount(DateTime first, DateTime last) {
@@ -178,6 +186,10 @@ class CalendarCore extends StatelessWidget {
         day = DateTime.utc(prevFocusedDay.year, prevFocusedDay.month,
             prevFocusedDay.day + pageDif * 7);
         break;
+      case CalendarFormat.days:
+        day = DateTime.utc(prevFocusedDay.year, prevFocusedDay.month,
+            prevFocusedDay.day + pageDif * numberOfVisible);
+        break;
     }
 
     if (day.isBefore(firstDay)) {
@@ -204,6 +216,10 @@ class CalendarCore extends StatelessWidget {
         day = DateTime.utc(
             firstDay.year, firstDay.month, firstDay.day + pageIndex * 7);
         break;
+      case CalendarFormat.days:
+        day = DateTime.utc(firstDay.year, firstDay.month,
+            firstDay.day + pageIndex * numberOfVisible);
+        break;
     }
 
     if (day.isBefore(firstDay)) {
@@ -217,6 +233,8 @@ class CalendarCore extends StatelessWidget {
 
   DateTimeRange _getVisibleRange(CalendarFormat format, DateTime focusedDay) {
     switch (format) {
+      case CalendarFormat.days:
+        return _daysInNumberOfVisibleDays(focusedDay);
       case CalendarFormat.month:
         return _daysInMonth(focusedDay);
       case CalendarFormat.twoWeeks:
@@ -239,6 +257,13 @@ class CalendarCore extends StatelessWidget {
     final daysBefore = _getDaysBefore(focusedDay);
     final firstToDisplay = focusedDay.subtract(Duration(days: daysBefore));
     final lastToDisplay = firstToDisplay.add(const Duration(days: 14));
+    return DateTimeRange(start: firstToDisplay, end: lastToDisplay);
+  }
+
+  DateTimeRange _daysInNumberOfVisibleDays(DateTime focusedDay) {
+    final daysBefore = _getDaysBefore(focusedDay);
+    final firstToDisplay = focusedDay.subtract(Duration(days: daysBefore));
+    final lastToDisplay = firstToDisplay.add(Duration(days: numberOfVisible));
     return DateTimeRange(start: firstToDisplay, end: lastToDisplay);
   }
 
